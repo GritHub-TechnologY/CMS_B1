@@ -72,7 +72,7 @@ export const signin = async (req, res) => {
     const { email, password } = req.body;
 
     // Check if user exists
-    const user = await User.findOne({ email }).populate('roles');
+    const user = await User.findOne({ email }).select('+password').populate('roles');
     if (!user) {
       return res.status(401).json({
         status: 'error',
