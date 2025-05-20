@@ -200,28 +200,34 @@ const PREDEFINED_ROLES = {
 };
 
 // Indexes
-roleSchema.index({ name: 1 });
 roleSchema.index({ level: 1 });
 roleSchema.index({ isActive: 1 });
 
 const Role = mongoose.model('Role', roleSchema);
 
 // Initialize predefined roles
-const initializeRoles = async () => {
+export const initializeRoles = async () => {
   try {
-    // Drop existing roles collection to avoid conflicts
-    await Role.collection.drop().catch(() => {
-      console.log('Roles collection does not exist, creating new one');
-    });
+    const Role = mongoose.model('Role');
+    
+    // Get all existing roles
+    const existingRoles = await Role.find({});
+    const existingRoleNames = existingRoles.map(role => role.name);
 
-    // Create new roles
-    for (const [key, roleData] of Object.entries(PREDEFINED_ROLES)) {
-      await Role.create(roleData);
+    // Filter out roles that already exist
+    const rolesToCreate = Object.values(PREDEFINED_ROLES).filter(
+      role => !existingRoleNames.includes(role.name)
+    );
+
+    if (rolesToCreate.length > 0) {
+      await Role.insertMany(rolesToCreate);
+      console.log(`Created ${rolesToCreate.length} new roles`);
+    } else {
+      console.log('All predefined roles already exist');
     }
-    console.log('Predefined roles initialized successfully');
   } catch (error) {
     console.error('Error initializing predefined roles:', error);
   }
 };
 
-export { Role, initializeRoles, PREDEFINED_ROLES }; 
+export { Role, PREDEFINED_ROLES }; 

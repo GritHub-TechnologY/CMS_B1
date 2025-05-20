@@ -1,22 +1,41 @@
 import express from 'express';
-import { createMember, getAllMembers, getMemberById, updateMember, archiveMember } from '../controllers/member.controller.js';
-import { validateMember } from '../validators/member.validator.js';
+import {
+  registerMember,
+  updateMember,
+  getAllMembers,
+  getMember,
+  archiveMember
+} from '../controllers/member.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { checkRole } from '../middleware/role.middleware.js';
 
 const router = express.Router();
 
-// Create a new member
-router.post('/', validateMember, createMember);
+// All routes require authentication
+router.use(verifyToken);
 
-// Get all members
+// Get all members (filtered by user's access level)
 router.get('/', getAllMembers);
 
-// Get a single member
-router.get('/:id', getMemberById);
+// Get single member
+router.get('/:id', getMember);
 
-// Update a member
-router.put('/:id', validateMember, updateMember);
+// Register new member (requires authorized roles)
+router.post('/',
+  checkRole(['Senior Pastor', 'Pastor', 'Elder', 'Deacon', 'Lane Leader', 'IT Officer']),
+  registerMember
+);
 
-// Archive a member
-router.delete('/:id', archiveMember);
+// Update member (requires authorized roles)
+router.patch('/:id',
+  checkRole(['Senior Pastor', 'Pastor', 'Elder', 'Deacon', 'Lane Leader', 'IT Officer']),
+  updateMember
+);
+
+// Archive member (requires Senior Pastor, Pastor, or Elder role)
+router.patch('/:id/archive',
+  checkRole(['Senior Pastor', 'Pastor', 'Elder']),
+  archiveMember
+);
 
 export default router; 
