@@ -17,13 +17,13 @@ router.use(verifyToken);
 
 // Start new journey (Pastor/Admin only)
 router.post('/start',
-  checkRole(['Pastor', 'Admin']),
+  checkRole(['Pastor', 'Admin','Deacon', 'Elder']),
   startJourney
 );
 
 // Update journey (Pastor/Admin only)
 router.patch('/:id',
-  checkRole(['Pastor', 'Admin']),
+  checkRole(['Pastor', 'Admin', 'Deacon', 'Elder']),
   updateJourney
 );
 

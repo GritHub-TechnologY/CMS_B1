@@ -155,7 +155,14 @@ export const getCurrentUser = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
 
     // Check if current password is correct
     const isPasswordCorrect = await user.comparePassword(currentPassword);
